@@ -42,6 +42,18 @@ public class Board {
 		piece.position = position;
 	}
 	
+	// remove a peca do tabuleiro e retorna a mesma
+	public Piece removePiece(Position position) {
+		if(!positionExists(position))
+			throw new BoardException("This position doesn't exist.");
+		if(getPiece(position) == null)
+			return null;
+		Piece aux = getPiece(position);
+		aux.position = null;
+		pieces[position.getRow()][position.getColumn()] = null;
+		return aux;
+	}
+	
 	private boolean positionExists(int row, int column) {
 		return row >= 0 && row < rows && column >= 0 && column < columns;
 	}
@@ -50,9 +62,10 @@ public class Board {
 		return positionExists(position.getRow(), position.getColumn());
 	}
 	
+	// checa se tem uma peca na posicao
 	public boolean thereIsAPiece(Position position) {
 		if(!positionExists(position))
 			throw new BoardException("This position doesn't exist.");
-		return getPiece(position) != null;  // checa se tem uma peca na posicao
+		return getPiece(position) != null;
 	}
 }
