@@ -14,8 +14,10 @@ public abstract class Piece {
 		return board;
 	}
 	
+	// verifica todos os movimentos possiveis de uma peca
 	public abstract boolean[][] possibleMoves();
 	
+	// retorna se eh possivel mexer a peca para a posicao p
 	public boolean possibleMove(Position p) {
 		return possibleMoves()[p.getRow()][p.getColumn()];
 	}
