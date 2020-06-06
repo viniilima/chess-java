@@ -27,7 +27,7 @@ public class King extends ChessPiece {
 		Position p = new Position(0, 0);
 		
 		// up
-		p.setValues(position.getRow() - 1, position.getColumn());
+		p.setValues(position.getRow() - 1, position.getColumn()); // contador - acessa a posicao acima da peca. "position" vem da classe Piece
 		if(getBoard().positionExists(p) && canMove(p))
 			m[p.getRow()][p.getColumn()] = true;
 		
