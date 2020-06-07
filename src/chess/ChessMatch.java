@@ -81,9 +81,10 @@ public class ChessMatch {
 	
 	// move uma peca e retorna uma possivel peca capturada
 	private Piece makeMove(Position source, Position target) {
-		Piece p = board.removePiece(source);
+		ChessPiece p = (ChessPiece)board.removePiece(source);
+		p.increaseMoveCount();
 		Piece cp = board.removePiece(target);
-		board.placePiece(p, target);
+		board.placePiece(p, target); // placePiece() recebe uma Piece, entao eh feito um upcasting de 'p' naturalmente
 		if(cp != null) {
 			piecesOnBoard.remove(cp);
 			capturedPieces.add(cp);
@@ -92,7 +93,8 @@ public class ChessMatch {
 	}
 	
 	private void undoMove(Position source, Position target, Piece cp) {
-		Piece p = board.removePiece(target);
+		ChessPiece p = (ChessPiece)board.removePiece(target);
+		p.decreaseMoveCount();
 		board.placePiece(p, source);
 		if(cp != null) {
 			board.placePiece(cp, target);
