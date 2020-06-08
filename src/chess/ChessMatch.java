@@ -1,5 +1,6 @@
 package chess;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,6 +23,7 @@ public class ChessMatch {
 	private boolean check;
 	private boolean checkMate;
 	private ChessPiece enPassant;
+	private ChessPiece promoted;
 	
 	private List<Piece> piecesOnBoard = new ArrayList<>();
 	private List<Piece> capturedPieces = new ArrayList<>();
@@ -51,6 +53,10 @@ public class ChessMatch {
 	
 	public ChessPiece getEnPassant() {
 		return enPassant;
+	}
+	
+	public ChessPiece getPromoeted() {
+		return promoted;
 	}
 
 	// retorna uma matriz com todas as pecas do tabuleiro
@@ -84,6 +90,15 @@ public class ChessMatch {
 		
 		ChessPiece movedPiece = (ChessPiece)board.getPiece(target);
 		
+		// #specialmove promoted
+		promoted = null;
+		if(movedPiece instanceof Pawn) {
+			if((movedPiece.getColor() == Color.WHITE && target.getRow() == 0) || (movedPiece.getColor() == Color.BLACK && target.getRow() == 7)) {
+				promoted = (ChessPiece)board.getPiece(target);
+				promoted = replacePromotedPiece("Q");
+			}
+		}
+		
 		check = (testCheck(opponent(currentPlayer))) ? true : false;
 		
 		if(testCheckMate(opponent(currentPlayer)))
@@ -109,6 +124,7 @@ public class ChessMatch {
 			piecesOnBoard.remove(cp);
 			capturedPieces.add(cp);
 		}
+		
 		// #specialmove castling kingside
 		if(p instanceof King && target.getColumn() == source.getColumn() + 2) {
 			Position sourceT = new Position(source.getRow(), source.getColumn() + 3);
@@ -117,6 +133,7 @@ public class ChessMatch {
 			board.placePiece(rook, targetT);
 			rook.increaseMoveCount();
 		}
+		
 		// #specialmove castling queenside
 		if(p instanceof King && target.getColumn() == source.getColumn() - 2) {
 			Position sourceT = new Position(source.getRow(), source.getColumn() - 4);
@@ -125,6 +142,7 @@ public class ChessMatch {
 			board.placePiece(rook, targetT);
 			rook.increaseMoveCount();
 		}
+		
 		// #specialmove en passant
 		if(p instanceof Pawn) {
 			if(source.getColumn() != target.getColumn() && cp == null) {
@@ -151,6 +169,7 @@ public class ChessMatch {
 			capturedPieces.remove(cp);
 			piecesOnBoard.add(cp);
 		}
+		
 		// #specialmove castling kingside
 		if(p instanceof King && target.getColumn() == source.getColumn() + 2) {
 			Position sourceT = new Position(source.getRow(), source.getColumn() + 3);
@@ -160,6 +179,7 @@ public class ChessMatch {
 			board.placePiece(rook, sourceT);
 			rook.decreaseMoveCount();
 		}
+		
 		// #specialmove castling queenside
 		if(p instanceof King && target.getColumn() == source.getColumn() - 2) {
 			Position sourceT = new Position(source.getRow(), source.getColumn() - 4);
@@ -169,6 +189,7 @@ public class ChessMatch {
 			board.placePiece(rook, sourceT);
 			rook.decreaseMoveCount();
 		}
+		
 		// #specialmove en passant
 		if(p instanceof Pawn) {
 			if(source.getColumn() != target.getColumn() && cp == enPassant) {
@@ -181,6 +202,30 @@ public class ChessMatch {
 				board.placePiece(pawn, pawnPosition);
 			}
 		}
+	}
+	
+	public ChessPiece replacePromotedPiece(String type) {
+		if(promoted == null)
+			throw new IllegalStateException("There's no piece to be promoted");
+		if(!type.equals("B") && !type.equals("N") && !type.equals("R") && !type.equals("Q"))
+			throw new InvalidParameterException("Invalid promotion type");
+		
+		Position pos = promoted.getChessPosition().chessToPosition();
+		Piece p = board.removePiece(pos);
+		piecesOnBoard.remove(p);
+		
+		ChessPiece newPiece = newPiece(type, promoted.getColor());
+		board.placePiece(newPiece, pos);
+		piecesOnBoard.add(newPiece);
+		
+		return newPiece;
+	}
+	
+	private ChessPiece newPiece(String type, Color color) {
+		if(type.equals("B")) return new Bishop(board, color);
+		if(type.equals("N")) return new Knight(board, color);
+		if(type.equals("R")) return new Rook(board, color);
+		return new Queen(board, color);
 	}
 	
 	private void validateSourcePosition(Position position) {
